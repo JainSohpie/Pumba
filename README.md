@@ -22,10 +22,12 @@ New Resource → GitLab 저장소 선택, 주소를 `ssh://git@gitlab.<사내주
 Build Pack: Dockerfile (자동 감지), Port: 8080
 Environment Variables에 `ANTHROPIC_API_KEY` 등록
 Deploy → 완료 후 `배포주소/health` 접속해 `"key_configured": true` 확인
+
 3. Webhook 자동배포
 Coolify 리소스의 Webhook URL 복사 → GitLab 프로젝트 Settings > Webhooks에 등록 (Push events 체크)
 → 이후 push만 하면 자동 재배포
-4. AX Store 등록
+
+5. AX Store 등록
 유형: 웹앱 선택 (파일업로드 아님 — 파이썬 서버가 실행되어야 함)
 앱 주소: Coolify 배포 주소
 소스코드(선택): GitLab 저장소 링크 입력 권장
@@ -34,6 +36,7 @@ Coolify 리소스의 Webhook URL 복사 → GitLab 프로젝트 Settings > Webho
 Claude Sonnet 4.6 기준 공문 1건 파싱 약 20~30원, 월 1회 사용 시 월 300~500원 수준.
 `app.py`의 `ALLOWED_MODEL`을 `claude-haiku-4-5-20251001`로 바꾸면 약 1/3로 절감.
 로컬 테스트
+
 ```bash
 pip install -r requirements.txt
 set ANTHROPIC_API_KEY=sk-ant-...   # macOS/Linux: export
