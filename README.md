@@ -17,6 +17,7 @@ git remote add origin https://gitlab.<사내주소>/<계정>/poomba.git
 git push -u origin main        # 비밀번호 자리에 개인 액세스 토큰
 ```
 ⚠️ API 키는 절대 커밋하지 않는다 (.env는 .gitignore에 포함됨)
+
 2. Coolify 배포
 New Resource → GitLab 저장소 선택, 주소를 `ssh://git@gitlab.<사내주소>/<계정>/poomba.git` 형식으로
 Build Pack: Dockerfile (자동 감지), Port: 8080
