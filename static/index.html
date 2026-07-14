@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>품바 — 품의서 Agent</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<style>
+  :root{
+    --pink:#F6C3CB; --cream:#F2EFE6; --green:#9DBE4B; --green-deep:#7E9C33; --green-soft:#E4ECC9;
+    --lav:#9B96E4; --lav-deep:#7C76D4; --lav-soft:#E6E4F8;
+    --ink:#2E2D28; --sub:#84806F; --line:#DCD7C4; --red:#D6493B; --yellow:#FFF200; --white:#fff;
+    --sans:'Pretendard Variable','Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    --malgun:'맑은 고딕','Malgun Gothic',sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--pink);font-family:var(--sans);color:var(--ink)}
+  .wrap{max-width:960px;margin:0 auto;padding:0 24px}
+
+  /* ── 히어로 ── */
+  .hero{text-align:center;padding-top:34px}
+  .eyebrow{font-size:12px;letter-spacing:.25em;opacity:.65;margin-bottom:2px}
+  .hero-row{display:flex;align-items:flex-end;justify-content:center;gap:6px}
+  .mascot{width:110px;height:110px;flex-shrink:0;transform:translateY(8px)}
+  .title-block{position:relative;display:inline-block;line-height:1}
+  h1.big{margin:0;font-weight:900;font-size:min(110px,21vw);color:var(--green);letter-spacing:-.04em;text-shadow:4px 4px 0 var(--white)}
+  .badge{position:absolute;top:-8px;right:-38px;width:52px;height:52px;border-radius:50%;background:var(--lav);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;transform:rotate(10deg);box-shadow:3px 3px 0 var(--white)}
+  .sub1{font-weight:800;font-size:19px;margin-top:2px;letter-spacing:.02em}
+  .sub2{font-size:13.5px;opacity:.7;margin-top:8px}
+  .tabs{display:flex;gap:10px;justify-content:center;margin-top:24px}
+  .tab{padding:11px 26px;cursor:pointer;font-weight:800;font-size:15.5px;background:var(--cream);color:var(--ink);border:2px solid var(--ink);border-bottom:none;border-radius:14px 14px 0 0;font-family:var(--sans)}
+  .tab.on-green{background:var(--green);color:#fff}
+  .tab.on-lav{background:var(--lav);color:#fff}
+
+  /* ── 본문 ── */
+  .main{background:var(--cream);border-top:2px solid var(--ink)}
+  .main .wrap{padding-top:28px;padding-bottom:90px}
+  .hidden{display:none}
+
+  .drop{border:2px dashed var(--ink);background:var(--green-soft);border-radius:16px;padding:32px 20px;text-align:center;cursor:pointer}
+  .drop .t{font-weight:800;font-size:17.5px}
+  .drop .d{font-size:13px;color:var(--sub);margin-top:6px}
+
+  .panel{margin-top:14px;background:#fff;border:2px solid var(--ink);border-radius:16px;padding:14px 18px}
+  .panel-lav{background:var(--lav-soft);border:2px solid var(--ink);border-radius:16px;padding:20px}
+  .toggle{background:none;border:none;cursor:pointer;color:var(--green-deep);font-size:14px;font-weight:800;padding:0;font-family:var(--sans)}
+  textarea,select,input[type=text]{width:100%;padding:9px 11px;border:2px solid var(--ink);border-radius:10px;font-size:13.5px;font-family:var(--sans);background:#fff;color:var(--ink);outline:none}
+  textarea{font-family:monospace;font-size:13px;resize:vertical}
+  label.lb{font-size:12px;font-weight:800;display:block;margin-bottom:6px}
+  .hint{font-size:12px;color:var(--sub);margin-top:6px}
+  .btn{display:inline-flex;align-items:center;gap:7px;border:2px solid var(--ink);border-radius:999px;cursor:pointer;font-family:var(--sans);font-weight:800}
+  .btn:disabled{background:var(--line)!important;color:var(--sub)!important;cursor:not-allowed}
+  .btn-green{background:var(--green);color:#fff;padding:9px 20px;font-size:13px}
+  .btn-lav{background:var(--lav);color:#fff;padding:11px 24px;font-size:15px;box-shadow:3px 3px 0 var(--ink)}
+  .btn-white{background:#fff;color:var(--ink);padding:11px 20px;font-size:14px}
+  .btn-sm{background:var(--green);color:#fff;padding:8px 16px;font-size:13px}
+  .btn-icon{background:#fff;color:var(--sub);padding:8px 10px}
+  .err{margin-top:10px;color:var(--red);font-size:13px;font-weight:600}
+
+  .result{margin-top:24px;background:#fff;border:2px solid var(--ink);border-radius:16px;overflow:hidden}
+  .result-head{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:2px solid var(--ink);background:var(--green-soft)}
+  .result-head .t{font-weight:800;font-size:16.5px}
+  .result-head .c{color:var(--sub);font-size:13px;font-weight:400}
+  .tbl-wrap{overflow-x:auto}
+  table.res{width:100%;border-collapse:collapse;font-size:13px}
+  table.res th{background:var(--cream);padding:10px 12px;text-align:left;font-weight:800;white-space:nowrap}
+  table.res td{padding:10px 12px;border-top:1px solid var(--line);vertical-align:top}
+  .chip{padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+  .chip-g{background:var(--green-soft);color:var(--green-deep)}
+  .chip-l{background:var(--lav-soft);color:var(--lav-deep)}
+  .muted{color:var(--sub);font-weight:400;font-size:12px}
+  .spin{display:inline-block;animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ── 품의서 카드 ── */
+  .card{margin-top:22px;background:#fff;border:2px solid var(--ink);border-radius:16px;overflow:hidden;box-shadow:4px 4px 0 rgba(46,45,40,.15)}
+  .card-bar{display:flex;gap:8px;align-items:center;padding:12px 16px;border-bottom:2px solid var(--ink);background:var(--lav-soft);flex-wrap:wrap}
+  .card-bar input,.card-bar select{width:auto;padding:7px 10px;border-radius:9px;font-size:13px}
+  .num{width:30px;height:30px;border-radius:50%;background:var(--lav);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0}
+  .doc{padding:26px 30px;font-family:var(--malgun);font-size:12pt;background:#fff}
+  .doc .title-box{display:flex;align-items:stretch;border:1px solid #000;margin-bottom:20px;max-width:560px}
+  .doc .title-box .k{background:var(--yellow);padding:7px 18px;font-weight:700;border-right:1px solid #000}
+  .doc .title-box .v{padding:7px 16px;font-weight:700}
+  .doc p.intro{margin:0 0 18px;font-size:10pt}
+  .doc table{border-collapse:collapse;margin:0 auto;font-size:12pt}
+  .doc th{border:1.5px solid #000;background:var(--yellow);padding:7px 26px;font-weight:700}
+  .doc td{border:1px solid #000;padding:7px 20px;text-align:center}
+  .doc td.k{font-weight:700;white-space:nowrap}
+  .doc td.v{padding:7px 34px;min-width:220px}
+  .doc td.b{padding:7px 16px;min-width:80px}
+  .doc p.attach{margin:22px 0 0;padding-left:24px}
+</style>
+</head>
+<body>
+
+<div class="hero wrap">
+  <div class="eyebrow">@홍보그룹 · 매체광고 업무지원</div>
+  <div class="hero-row">
+    <!-- 오리지널 마스코트: 새싹 결재요정 -->
+    <svg class="mascot" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-label="품바 마스코트">
+      <!-- 새싹 -->
+      <path d="M60 22 C58 12 48 8 42 10 C46 16 52 19 58 21 Z" fill="#7E9C33"/>
+      <path d="M60 22 C63 11 74 8 79 12 C74 17 67 20 62 22 Z" fill="#9DBE4B"/>
+      <line x1="60" y1="22" x2="60" y2="30" stroke="#7E9C33" stroke-width="3" stroke-linecap="round"/>
+      <!-- 몸통 -->
+      <ellipse cx="60" cy="72" rx="38" ry="36" fill="#B7D06C" stroke="#2E2D28" stroke-width="3"/>
+      <!-- 팔 -->
+      <path d="M26 74 Q14 70 12 60" fill="none" stroke="#2E2D28" stroke-width="3" stroke-linecap="round"/>
+      <path d="M94 74 Q106 78 108 88" fill="none" stroke="#2E2D28" stroke-width="3" stroke-linecap="round"/>
+      <!-- 도장 -->
+      <rect x="100" y="84" width="16" height="12" rx="2" fill="#D6493B" stroke="#2E2D28" stroke-width="2.5" transform="rotate(18 108 90)"/>
+      <rect x="104" y="74" width="8" height="12" rx="2" fill="#9B96E4" stroke="#2E2D28" stroke-width="2.5" transform="rotate(18 108 80)"/>
+      <!-- 얼굴 -->
+      <circle cx="47" cy="66" r="4" fill="#2E2D28"/>
+      <circle cx="73" cy="66" r="4" fill="#2E2D28"/>
+      <circle cx="40" cy="76" r="5" fill="#F6A9B4" opacity=".8"/>
+      <circle cx="80" cy="76" r="5" fill="#F6A9B4" opacity=".8"/>
+      <path d="M52 78 Q60 85 68 78" fill="none" stroke="#2E2D28" stroke-width="3" stroke-linecap="round"/>
+      <!-- 발 -->
+      <ellipse cx="46" cy="107" rx="9" ry="5" fill="#7E9C33" stroke="#2E2D28" stroke-width="2.5"/>
+      <ellipse cx="74" cy="107" rx="9" ry="5" fill="#7E9C33" stroke="#2E2D28" stroke-width="2.5"/>
+    </svg>
+    <div class="title-block">
+      <h1 class="big">품바</h1>
+      <div class="badge">결재</div>
+    </div>
+  </div>
+  <div class="sub1">품의서 AGENT</div>
+  <div class="sub2">공문 던져주면 정리하고, 시트 붙여넣으면 품의서까지.</div>
+  <div class="tabs">
+    <button class="tab on-green" id="tabBtn0">① 공문 정리</button>
+    <button class="tab" id="tabBtn1">② 품의서 생성</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="wrap">
+
+    <!-- ══ 탭 1: 공문 정리 ══ -->
+    <section id="tab0">
+      <div class="drop" id="drop">
+        <div style="font-size:22px">📄</div>
+        <div class="t">공문 파일을 여기로 던져주세요</div>
+        <div class="d">PDF · Word(docx) 여러 개 동시 OK — hwp는 PDF 변환 또는 아래 텍스트 붙여넣기</div>
+        <input type="file" id="fileInput" multiple accept=".pdf,.docx,.hwp,.hwpx" style="display:none">
+      </div>
+
+      <div class="panel">
+        <button class="toggle" id="pasteToggle">📋 공문 텍스트 붙여넣기 ▾</button>
+        <div class="hidden" id="pasteArea" style="margin-top:10px">
+          <textarea id="pasteText" rows="7" placeholder="공문 본문을 그대로 복사해 붙여넣으세요 (한글hwp·이메일 본문 모두 OK)"></textarea>
+          <button class="btn btn-green" id="pasteBtn" style="margin-top:8px" disabled>정리하기</button>
+        </div>
+      </div>
+
+      <div class="result hidden" id="resultBox">
+        <div class="result-head">
+          <div class="t">정리 결과 <span class="c" id="resultCount"></span></div>
+          <button class="btn btn-green" id="tsvBtn" disabled>📑 엑셀 붙여넣기용 복사</button>
+        </div>
+        <div class="tbl-wrap">
+          <table class="res">
+            <thead><tr><th>매체명</th><th>구분</th><th>내용</th><th>금액</th><th>기간/일시</th><th>혜택</th><th>문서번호</th></tr></thead>
+            <tbody id="resultBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ 탭 2: 품의서 생성 ══ -->
+    <section id="tab1" class="hidden">
+      <div class="panel-lav">
+        <div style="display:grid;grid-template-columns:1fr 92px;gap:12px">
+          <div>
+            <label class="lb">광고비 시트 통째로 붙여넣기 (엑셀에서 전체 선택 → 복사 → 붙여넣기)</label>
+            <textarea id="sheetText" rows="6" placeholder="시트 전체를 그대로 붙여넣으세요.
+작년실적·누계실적 행은 자동으로 걸러내고,
+오른쪽에서 고른 '품의 월' 항목만 매체별 순서대로 뽑아냅니다."></textarea>
+            <div class="hint">※ 엑셀의 빨간 글씨(색상)는 복사할 때 사라져서, 대신 <b>월 기준</b>으로 이번 품의 대상을 골라냅니다. 빨간 항목들이 모두 같은 월이면 그대로 동작해요.</div>
+          </div>
+          <div>
+            <label class="lb">품의 월</label>
+            <select id="monthSel"></select>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:14px">
+          <button class="btn btn-lav" id="genBtn">✨ 품의서 생성</button>
+          <button class="btn btn-white" id="addBtn">＋ 직접 입력</button>
+        </div>
+        <div class="err hidden" id="genErr"></div>
+      </div>
+      <div id="cards"></div>
+    </section>
+
+  </div>
+</div>
+
+<script>
+/* ═══════ 공통 ═══════ */
+const $ = (s) => document.querySelector(s);
+/* content: 문자열 또는 Anthropic 콘텐츠 블록 배열 */
+async function callClaude(content, system) {
+  const res = await fetch("/api/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 1000, system, messages: [{ role: "user", content }] }),
+  });
+  if (!res.ok) {
+    let msg = `API 오류 (${res.status})`;
+    try { const j = await res.json(); if (j.error && j.error.message) msg = j.error.message; } catch (e) {}
+    throw new Error(msg);
+  }
+  const data = await res.json();
+  return data.content.filter((b) => b.type === "text").map((b) => b.text).join("\n");
+}
+
+const stripFence = (t) => t.replace(/```json|```/g, "").trim();
+const parseObj = (t) => { const c = stripFence(t); return JSON.parse(c.slice(c.indexOf("{"), c.lastIndexOf("}") + 1)); };
+const parseArr = (t) => { const c = stripFence(t); return JSON.parse(c.slice(c.indexOf("["), c.lastIndexOf("]") + 1)); };
+const fmtWon = (n) => (typeof n === "number" && !isNaN(n) ? n.toLocaleString("ko-KR") + "원" : "-");
+const toChon = (n) => (typeof n === "number" && !isNaN(n) ? Math.round(n / 1000).toLocaleString("ko-KR") : "-");
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+/* ═══════ 탭 전환 ═══════ */
+const tabBtns = [$("#tabBtn0"), $("#tabBtn1")];
+const tabSecs = [$("#tab0"), $("#tab1")];
+function setTab(i) {
+  tabSecs.forEach((s, j) => s.classList.toggle("hidden", i !== j));
+  tabBtns[0].classList.toggle("on-green", i === 0);
+  tabBtns[1].classList.toggle("on-lav", i === 1);
+}
+tabBtns[0].addEventListener("click", () => setTab(0));
+tabBtns[1].addEventListener("click", () => setTab(1));
+
+/* ═══════ 탭 1: 공문 정리 ═══════ */
+const EXTRACT_SYSTEM = `당신은 건설사 홍보팀의 문서 정리 도우미입니다. 언론사가 보낸 광고/협찬 요청 공문에서 정보를 추출합니다.
+반드시 아래 키를 가진 JSON 객체 하나만 출력하세요. 마크다운 백틱, 설명문 등 다른 텍스트는 절대 포함하지 마세요.
+{
+ "media": "매체명 (예: 더벨, 이뉴스투데이)",
+ "docNo": "문서번호",
+ "docDate": "공문 발신일 (YYYY.M.D)",
+ "category": "광고협찬 | 포럼협찬 중 하나 (포럼/행사/컨퍼런스 협찬이면 포럼협찬, 그 외 배너·특집·지면 광고는 모두 광고협찬)",
+ "detail": "핵심 내용 한 줄 (행사명/광고종류)",
+ "amount": 요청금액_숫자_원단위,
+ "vatSeparate": true/false,
+ "period": "행사일시 또는 게재기간",
+ "benefit": "제공 혜택 요약 (없으면 빈 문자열)",
+ "contact": "연락처 (없으면 빈 문자열)"
+}
+금액이 '500만원'처럼 표기되면 원 단위 숫자(5000000)로 변환하세요.`;
+
+let rows = [];
+let rowId = 0;
+
+const readBase64 = (f) => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result.split(",")[1]); r.onerror = () => no(new Error("파일 읽기 실패")); r.readAsDataURL(f); });
+const readBuf = (f) => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = () => no(new Error("파일 읽기 실패")); r.readAsArrayBuffer(f); });
+
+function renderRows() {
+  $("#resultBox").classList.toggle("hidden", rows.length === 0);
+  const done = rows.filter((r) => r.status === "done");
+  $("#resultCount").textContent = `(${done.length}/${rows.length}건 완료)`;
+  $("#tsvBtn").disabled = done.length === 0;
+  $("#resultBody").innerHTML = rows.map((r) => {
+    if (r.status === "loading") return `<tr><td colspan="7" style="color:var(--sub)"><span class="spin">⏳</span> ${esc(r.name)} — 공문 읽는 중…</td></tr>`;
+    if (r.status === "error") return `<tr><td colspan="7" style="color:var(--red)">⚠️ ${esc(r.name)} — ${esc(r.error)}</td></tr>`;
+    const j = r.result;
+    const chip = j.category === "포럼협찬" ? "chip chip-l" : "chip chip-g";
+    return `<tr>
+      <td style="font-weight:800;white-space:nowrap">${esc(j.media)}</td>
+      <td><span class="${chip}">${esc(j.category)}</span></td>
+      <td style="min-width:180px">${esc(j.detail)}</td>
+      <td style="white-space:nowrap;font-weight:800">${fmtWon(j.amount)}${j.vatSeparate ? ' <span class="muted">(VAT별도)</span>' : ""}<div class="muted">천원 환산 ${toChon(j.amount)}</div></td>
+      <td style="font-size:12px">${esc(j.period)}</td>
+      <td style="font-size:12px;max-width:220px">${esc(j.benefit)}</td>
+      <td class="muted" style="white-space:nowrap">${esc(j.docNo)}</td>
+    </tr>`;
+  }).join("");
+}
+
+async function runExtract(content, id) {
+  const row = rows.find((r) => r.id === id);
+  try {
+    const text = await callClaude(content, EXTRACT_SYSTEM);
+    row.status = "done"; row.result = parseObj(text);
+  } catch (e) {
+    row.status = "error"; row.error = e.message;
+  }
+  renderRows();
+}
+
+async function processFile(file) {
+  const id = ++rowId;
+  rows.push({ id, name: file.name, status: "loading" });
+  renderRows();
+  const row = rows.find((r) => r.id === id);
+  try {
+    const ext = file.name.split(".").pop().toLowerCase();
+    let content;
+    if (ext === "pdf") {
+      const b64 = await readBase64(file);
+      content = [
+        { type: "document", source: { type: "base64", media_type: "application/pdf", data: b64 } },
+        { type: "text", text: "이 공문에서 정보를 추출해 JSON으로만 답하세요." },
+      ];
+    } else if (ext === "docx") {
+      const buf = await readBuf(file);
+      const { value } = await mammoth.extractRawText({ arrayBuffer: buf });
+      content = "아래 공문 텍스트에서 정보를 추출해 JSON으로만 답하세요.\n\n" + value;
+    } else if (ext === "hwp" || ext === "hwpx") {
+      throw new Error("hwp는 브라우저에서 해석할 수 없어요. PDF로 저장하거나 본문을 '텍스트 붙여넣기'로 올려주세요.");
+    } else {
+      throw new Error("지원 형식: pdf, docx");
+    }
+    await runExtract(content, id);
+  } catch (e) {
+    row.status = "error"; row.error = e.message; renderRows();
+  }
+}
+
+$("#drop").addEventListener("click", () => $("#fileInput").click());
+$("#drop").addEventListener("dragover", (e) => e.preventDefault());
+$("#drop").addEventListener("drop", (e) => { e.preventDefault(); [...e.dataTransfer.files].forEach(processFile); });
+$("#fileInput").addEventListener("change", (e) => { [...e.target.files].forEach(processFile); e.target.value = ""; });
+
+$("#pasteToggle").addEventListener("click", () => $("#pasteArea").classList.toggle("hidden"));
+$("#pasteText").addEventListener("input", (e) => { $("#pasteBtn").disabled = !e.target.value.trim(); });
+$("#pasteBtn").addEventListener("click", () => {
+  const t = $("#pasteText").value.trim();
+  if (!t) return;
+  const id = ++rowId;
+  rows.push({ id, name: `붙여넣은 공문 #${id}`, status: "loading" });
+  renderRows();
+  runExtract("아래 공문 텍스트에서 정보를 추출해 JSON으로만 답하세요.\n\n" + t, id);
+  $("#pasteText").value = ""; $("#pasteBtn").disabled = true;
+});
+
+$("#tsvBtn").addEventListener("click", () => {
+  const done = rows.filter((r) => r.status === "done");
+  const header = "매체명\t구분\t내용\t금액(원)\t금액(천원)\t기간/일시\t비고";
+  const lines = done.map((r) => { const j = r.result; return [j.media, j.category, j.detail, j.amount ?? "", toChon(j.amount), j.period, j.benefit].join("\t"); });
+  navigator.clipboard.writeText([header, ...lines].join("\n"));
+  const b = $("#tsvBtn"); const t = b.textContent; b.textContent = "✅ 복사됨!";
+  setTimeout(() => (b.textContent = t), 1600);
+});
+
+/* ═══════ 탭 2: 품의서 생성 ═══════ */
+const PARSE_SYSTEM = `당신은 홍보팀 품의서 작성 도우미입니다. 사용자가 붙여넣은 매체별 광고비 관리 시트(엑셀 복사)에서 품의 대상 항목을 추출합니다.
+
+시트 구조 이해:
+- 열: 매체명 / 월(일자) / 내용 / 금액(천원 단위) / 비고
+- 매체명은 병합 셀이라 각 매체 블록의 첫 행에만 나타남. 이후 행들은 같은 매체에 속하므로 매체명을 이어서 적용할 것
+- "작년실적", "누계실적" 행은 집계 행이므로 반드시 무시
+- 월별 실행 내역 행(예: "6월 특집협찬 10,000")만 데이터로 취급
+
+추출 규칙:
+- 사용자가 지정한 "대상 월"에 해당하는 행만 추출 (그 외 월은 모두 제외)
+- 시트에 나타난 순서 그대로 배열에 담을 것
+- 한 매체에 대상 월 항목이 여러 개면 각각 별도 항목으로
+
+반드시 JSON 배열만 출력하세요. 백틱·설명 금지. 각 항목:
+{
+ "media": "매체명",
+ "type": "광고협찬 또는 포럼협찬 (내용에 포럼/행사/컨퍼런스가 들어가면 포럼협찬, 그 외 광고·특집·배너·지면은 광고협찬)",
+ "amountChon": 금액_숫자 (시트 금액은 이미 천원 단위이므로 그대로. 예: 10,000 → 10000),
+ "detail": "내용 원문 그대로"
+}
+대상 월 항목이 하나도 없으면 빈 배열 []을 출력하세요.`;
+
+const monthSel = $("#monthSel");
+for (let i = 1; i <= 12; i++) { const o = document.createElement("option"); o.value = i; o.textContent = i + "월"; monthSel.appendChild(o); }
+monthSel.value = new Date().getMonth() + 1;
+
+let items = [];
+let itemId = 0;
+
+function docRows(it) {
+  const amountTxt = it.amountChon !== "" && !isNaN(Number(it.amountChon)) ? Number(it.amountChon).toLocaleString("ko-KR") + "천원" : "○○천원";
+  return [
+    ["매체명", it.media || "○○○", ""],
+    ["협찬명", it.type, ""],
+    ["협찬금액", amountTxt, "VAT제외"],
+    ["예산과목", "광고선전비(신문광고)", ""],
+    ["실시", it.detail || "○○○", ""],
+  ];
+}
+const docTitle = (it) => `[${it.media || "매체명"}] ${monthSel.value}월 ${it.type}`;
+
+function renderPreview(card, it) {
+  const rd = docRows(it);
+  card.querySelector(".pv-title").textContent = docTitle(it);
+  card.querySelectorAll(".pv-cell").forEach((el, i) => { el.textContent = rd[Math.floor(i / 1)][1]; });
+  const cells = card.querySelectorAll("[data-pv]");
+  cells.forEach((el) => {
+    const [r, c] = el.dataset.pv.split("-").map(Number);
+    el.textContent = rd[r][c];
+  });
+}
+
+function buildCard(it, order) {
+  const card = document.createElement("div");
+  card.className = "card";
+  const rd = docRows(it);
+  card.innerHTML = `
+    <div class="card-bar">
+      <div class="num">${order}</div>
+      <input type="text" class="f-media" placeholder="매체명" style="width:125px;font-weight:700" value="${esc(it.media)}">
+      <select class="f-type" style="width:110px">
+        <option${it.type === "광고협찬" ? " selected" : ""}>광고협찬</option>
+        <option${it.type === "포럼협찬" ? " selected" : ""}>포럼협찬</option>
+      </select>
+      <input type="text" class="f-amount" placeholder="금액(천원)" style="width:95px;text-align:right" value="${esc(it.amountChon)}">
+      <span style="font-size:12px;color:var(--sub)">천원</span>
+      <input type="text" class="f-detail" placeholder="실시 내용 (예: CI 배너)" style="flex:1;min-width:130px" value="${esc(it.detail)}">
+      <button class="btn btn-sm f-copy">📋 복사</button>
+      <button class="btn btn-icon f-del" title="삭제">🗑️</button>
+    </div>
+    <div class="doc">
+      <div class="title-box"><div class="k">제목</div><div class="v pv-title">${esc(docTitle(it))}</div></div>
+      <p class="intro">당사 이미지 제고 일환으로 아래와 같이 협찬실시코자 하오니 결재바랍니다.</p>
+      <table>
+        <thead><tr><th>구 분</th><th>내 용</th><th>비 고</th></tr></thead>
+        <tbody>
+          ${rd.map((r, i) => `<tr><td class="k">${r[0]}</td><td class="v" data-pv="${i}-1">${esc(r[1])}</td><td class="b" data-pv="${i}-2">${esc(r[2])}</td></tr>`).join("")}
+        </tbody>
+      </table>
+      <p class="attach">붙임 : 요청공문.&nbsp;&nbsp;끝.</p>
+    </div>`;
+
+  const upd = () => renderPreview(card, it);
+  card.querySelector(".f-media").addEventListener("input", (e) => { it.media = e.target.value; upd(); });
+  card.querySelector(".f-type").addEventListener("change", (e) => { it.type = e.target.value; upd(); });
+  card.querySelector(".f-amount").addEventListener("input", (e) => { e.target.value = e.target.value.replace(/[^0-9]/g, ""); it.amountChon = e.target.value; upd(); });
+  card.querySelector(".f-detail").addEventListener("input", (e) => { it.detail = e.target.value; upd(); });
+  card.querySelector(".f-del").addEventListener("click", () => { items = items.filter((x) => x.id !== it.id); renderCards(); });
+  card.querySelector(".f-copy").addEventListener("click", async (e) => {
+    const rd2 = docRows(it);
+    const title = docTitle(it);
+    const plain = [`제목: ${title}`, "", "당사 이미지 제고 일환으로 아래와 같이 협찬실시코자 하오니 결재바랍니다.", "", "구 분\t내 용\t비 고", ...rd2.map((r) => r.join("\t")), "", "붙임 : 요청공문.  끝."].join("\n");
+    const m = "font-family:'맑은 고딕','Malgun Gothic',sans-serif;";
+    const td = (t, o = "") => `<td style="${m}font-size:12pt;border:1px solid #000;padding:6px 14px;text-align:center;${o}">${t}</td>`;
+    const html = `<div style="${m}"><p style="${m}font-size:12pt;"><b>제목: ${esc(title)}</b></p>
+<p style="${m}font-size:10pt;">당사 이미지 제고 일환으로 아래와 같이 협찬실시코자 하오니 결재바랍니다.</p>
+<table style="border-collapse:collapse;${m}font-size:12pt;">
+<tr>${["구 분", "내 용", "비 고"].map((h) => `<td style="${m}font-size:12pt;border:1px solid #000;padding:6px 14px;text-align:center;background:#FFFF00;font-weight:bold;">${h}</td>`).join("")}</tr>
+${rd2.map((r) => `<tr>${td(`<b>${esc(r[0])}</b>`)}${td(esc(r[1]), "min-width:220px;")}${td(esc(r[2]), "min-width:80px;")}</tr>`).join("")}
+</table><p style="${m}font-size:12pt;">붙임 : 요청공문.&nbsp;&nbsp;끝.</p></div>`;
+    try {
+      await navigator.clipboard.write([new ClipboardItem({ "text/html": new Blob([html], { type: "text/html" }), "text/plain": new Blob([plain], { type: "text/plain" }) })]);
+    } catch { await navigator.clipboard.writeText(plain); }
+    const b = e.currentTarget; const t = b.textContent; b.textContent = "✅ 복사됨!";
+    setTimeout(() => (b.textContent = t), 1600);
+  });
+  return card;
+}
+
+function renderCards() {
+  const box = $("#cards");
+  box.innerHTML = "";
+  items.forEach((it, i) => box.appendChild(buildCard(it, i + 1)));
+}
+monthSel.addEventListener("change", renderCards);
+
+$("#addBtn").addEventListener("click", () => {
+  items.push({ id: ++itemId, media: "", type: "광고협찬", amountChon: "", detail: "CI 배너" });
+  renderCards();
+});
+
+$("#genBtn").addEventListener("click", async () => {
+  const errEl = $("#genErr");
+  errEl.classList.add("hidden");
+  const t = $("#sheetText").value.trim();
+  if (!t) { errEl.textContent = "⚠️ 엑셀 내역이나 텍스트를 붙여넣어 주세요."; errEl.classList.remove("hidden"); return; }
+  const btn = $("#genBtn"); const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = "⏳ 변환 중…";
+  try {
+    const month = monthSel.value;
+    const text = await callClaude(
+      `대상 월: ${month}월\n\n아래 시트에서 ${month}월 품의 항목만 JSON 배열로 추출하세요.\n\n${t}`,
+      PARSE_SYSTEM
+    );
+    const arr = parseArr(text);
+    if (arr.length === 0) { errEl.textContent = `⚠️ ${month}월 항목을 찾지 못했어요. '품의 월'이 맞는지 확인해 주세요.`; errEl.classList.remove("hidden"); return; }
+    arr.forEach((x) => items.push({
+      id: ++itemId,
+      media: x.media || "",
+      type: x.type === "포럼협찬" ? "포럼협찬" : "광고협찬",
+      amountChon: typeof x.amountChon === "number" ? x.amountChon : "",
+      detail: x.detail || "",
+    }));
+    renderCards();
+    $("#sheetText").value = "";
+  } catch (e) {
+    errEl.textContent = "⚠️ " + e.message; errEl.classList.remove("hidden");
+  } finally {
+    btn.disabled = false; btn.textContent = orig;
+  }
+});
+</script>
+</body>
+</html>
